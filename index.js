@@ -112,6 +112,12 @@ async function run() {
         res.send(result)
       })
 
+      app.post('/phones',  async (req, res) => {
+        const newItem = req.body;
+        const result = await phonesCollection.insertOne(newItem)
+        res.send(result);
+      })
+
       app.get('/carts', verifyJWT, async (req, res) => {
         const email = req.query.email;
         if (!email) {
