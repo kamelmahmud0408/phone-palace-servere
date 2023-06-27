@@ -3,7 +3,7 @@ const app = express()
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 app.use(cors())
@@ -55,6 +55,21 @@ async function run() {
         res.send({ token })
       })
 
+      const verifyAdmin = async (req, res, next) => {
+        const email = req.decoded.email;
+        const query = { email: email }
+        const user = await usersCollection.findOne(query);
+        if (user?.role !== 'admin') {
+          return res.status(403).send({ error: true, message: 'forbidden message' });
+        }
+        next();
+      }
+
+      app.get('/users', async (req, res) => {
+        const result = await usersCollection.find().toArray()
+        res.send(result)
+      })
+
     app.post('/users', async (req, res) => {
         const user = req.body;
         const query = { email: user.email }
@@ -66,27 +81,39 @@ async function run() {
         res.send(result)
       })
 
+      app.patch('/users/admin/:id', async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) }
+        const updateDoc = {
+          $set: {
+            role: 'admin'
+          },
+        };
+        const result = await usersCollection.updateOne(filter, updateDoc)
+        res.send(result)
+      })
+
       app.get('/phones', async (req, res) => { 
         const result = await phonesCollection.find().toArray()
         res.send(result)
       })
 
-      app.get('/carts', verifyJWT, async (req, res) => {
-        const email = req.query.email;
-        if (!email) {
-          res.send([])
-        }
+      app.get('/carts', async (req, res) => {
+        // const email = req.query.email;
+        // if (!email) {
+        //   res.send([])
+        // }
   
-        const decodedEmail = req.decoded.email;
-        if (email !== decodedEmail) {
-          return res.status(403).send({ error: true, message: 'porviden access' })
-        }
+        // const decodedEmail = req.decoded.email;
+        // if (email !== decodedEmail) {
+        //   return res.status(403).send({ error: true, message: 'porviden access' })
+        // }
   
-        else {
-          const query = { email: email };
-          const result = await cartsCollections.find(query).toArray()
+        // else {
+        //   const query = { email: email };
+          const result = await cartsCollections.find().toArray()
           res.send(result)
-        }
+        
       })
   
 
