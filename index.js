@@ -45,6 +45,7 @@ async function run() {
 
     const phonesCollection = client.db('phoneDb').collection('phones')
     const usersCollection = client.db('phoneDb').collection('users')
+    const cartsCollections = client.db('phoneDb').collection('carts')
 
     app.post('/jwt', (req, res) => {
         const user = req.body;
@@ -70,7 +71,32 @@ async function run() {
         res.send(result)
       })
 
+      app.get('/carts', verifyJWT, async (req, res) => {
+        const email = req.query.email;
+        if (!email) {
+          res.send([])
+        }
+  
+        const decodedEmail = req.decoded.email;
+        if (email !== decodedEmail) {
+          return res.status(403).send({ error: true, message: 'porviden access' })
+        }
+  
+        else {
+          const query = { email: email };
+          const result = await cartsCollections.find(query).toArray()
+          res.send(result)
+        }
+      })
+  
 
+
+      app.post('/carts', async (req, res) => {
+        const item = req.body;
+        console.log(item)
+        const result = await cartsCollections.insertOne(item)
+        res.send(result)
+      })
 
 
 
