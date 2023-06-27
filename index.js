@@ -17,7 +17,7 @@ const verifyJWT = (req, res, next) => {
     // bearer token
     const token = authorization.split(' ')[1];
   
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
       if (err) {
         return res.status(401).send({ error: true, message: 'Unauthorized access' })
       }
@@ -81,6 +81,20 @@ async function run() {
         res.send(result)
       })
 
+      app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+        const email = req.params.email;
+  
+        if (req.decoded.email !== email) {
+          res.send({ admin: false })
+        }
+  
+        const query = { email: email }
+        const user = await usersCollection.findOne(query);
+        const result = { admin: user?.role === 'admin' }
+        res.send(result);
+      })
+  
+
       app.patch('/users/admin/:id', async (req, res) => {
         const id = req.params.id;
         const filter = { _id: new ObjectId(id) }
@@ -98,22 +112,22 @@ async function run() {
         res.send(result)
       })
 
-      app.get('/carts', async (req, res) => {
-        // const email = req.query.email;
-        // if (!email) {
-        //   res.send([])
-        // }
+      app.get('/carts', verifyJWT, async (req, res) => {
+        const email = req.query.email;
+        if (!email) {
+          res.send([])
+        }
   
-        // const decodedEmail = req.decoded.email;
-        // if (email !== decodedEmail) {
-        //   return res.status(403).send({ error: true, message: 'porviden access' })
-        // }
+        const decodedEmail = req.decoded.email;
+        if (email !== decodedEmail) {
+          return res.status(403).send({ error: true, message: 'porviden access' })
+        }
   
-        // else {
-        //   const query = { email: email };
-          const result = await cartsCollections.find().toArray()
+        else {
+          const query = { email: email };
+          const result = await cartsCollections.find(query).toArray()
           res.send(result)
-        
+        }
       })
   
 
