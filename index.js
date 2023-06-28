@@ -41,11 +41,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const phonesCollection = client.db('phoneDb').collection('phones')
     const usersCollection = client.db('phoneDb').collection('users')
     const cartsCollections = client.db('phoneDb').collection('carts')
+    const reviewCollections = client.db('phoneDb').collection('review')
 
     app.post('/jwt', (req, res) => {
         const user = req.body;
@@ -55,15 +56,7 @@ async function run() {
         res.send({ token })
       })
 
-      const verifyAdmin = async (req, res, next) => {
-        const email = req.decoded.email;
-        const query = { email: email }
-        const user = await usersCollection.findOne(query);
-        if (user?.role !== 'admin') {
-          return res.status(403).send({ error: true, message: 'forbidden message' });
-        }
-        next();
-      }
+    
 
       app.get('/users', async (req, res) => {
         const result = await usersCollection.find().toArray()
@@ -150,6 +143,10 @@ async function run() {
         res.send(result)
       })
 
+      app.get('/review', async (req, res) => {
+        const result = await reviewCollections.find().toArray()
+        res.send(result)
+      })
 
 
     // Send a ping to confirm a successful connection
