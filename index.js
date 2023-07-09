@@ -107,6 +107,16 @@ async function run() {
         res.send(result)
       })
 
+      app.get('/myphone', async (req, res) => {
+        let query = {};
+        if (req.query?.email) {
+          query = { email: req.query.email }
+        }
+        const result = await phonesCollection.find(query).toArray();
+        res.send(result)
+      })
+  
+
       app.post('/phones',  async (req, res) => {
         const newItem = req.body;
         const result = await phonesCollection.insertOne(newItem)
