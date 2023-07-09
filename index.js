@@ -123,6 +123,27 @@ async function run() {
         res.send(result);
       })
 
+      app.put('/phones/:id', async (req, res) => {
+        const id = req.params.id;
+        console.log(id)
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true }
+        const updatedClass = req.body;
+        const newUpdateClass = {
+          $set: {
+            phoneName: updatedClass.phoneName,
+            image: updatedClass.image,
+            price: updatedClass.price,
+            email: updatedClass.email,
+            features: updatedClass.features,
+            category: updatedClass.category,
+            
+          }
+        };
+        const result = await phonesCollection.updateOne(filter, newUpdateClass, options)
+        res.send(result)
+      })
+
       app.get('/carts', verifyJWT, async (req, res) => {
         const email = req.query.email;
         if (!email) {
