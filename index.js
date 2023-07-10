@@ -144,6 +144,13 @@ async function run() {
         res.send(result)
       })
 
+      app.delete('/phones/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) }
+        const result = await phonesCollection.deleteOne(query)
+        res.send(result)
+      })
+
       app.get('/carts', verifyJWT, async (req, res) => {
         const email = req.query.email;
         if (!email) {
@@ -197,6 +204,15 @@ async function run() {
         res.send({
           clientSecret: paymentIntent.client_secret
         })
+      })
+
+      app.get('/payments', async (req, res) => {
+        let query = {};
+        if (req.query?.email) {
+          query = { email: req.query.email }
+        }
+        const result = await paymantsCollections.find(query).sort({ date: -1 }).toArray()
+        res.send(result)
       })
 
       app.post('/payments', async (req, res) => {
